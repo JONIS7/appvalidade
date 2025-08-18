@@ -4,43 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta name="theme-color" content="#007bff"/>
-  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e4002b"/> <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
   <title>Controle de Validade</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/imask"></script>
 </head>
 <body>
   
   <header>
-    <h1>Controle de Validades</h1>
+    <h1 id="header-title">Gôndolas</h1>
   </header>
 
   <main class="container">
-
-      <div class="card" id="cadastro">
-  <h2>Novo Medicamento</h2>
-
-  <div id="codigo-lido-container" style="display:none;">
-    <strong>Código Lido:</strong>
-    <span id="codigo-lido-texto"></span>
-  </div>
-  <input type="text" id="nome" placeholder="Nome ou código do produto" />
-      <input type="text" id="nome" placeholder="Nome ou código do produto" />
-      <div class="input-group">
-        <label for="validade">Data de Validade:</label>
-        <input type="date" id="validade" />
+    <div id="view-gondolas">
+      <div class="card">
+        <h2>Nova Gôndola</h2>
+        <form id="form-gondola" class="form-inline">
+          <input type="text" id="nome-gondola" placeholder="Ex: Analgésicos, Vitaminas" required />
+          <button type="submit" class="btn-primary">Criar Gôndola</button>
+        </form>
       </div>
-      <div id="reader"></div>
-      <button id="scanBtn" class="btn-secondary">📷 Ler Código de Barras</button>
-      <button id="salvarBtn" class="btn-primary">Salvar Medicamento</button>
+      <div class="card">
+        <h2>Minhas Gôndolas</h2>
+        <ul id="lista-gondolas" class="lista-custom"></ul>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Medicamentos Cadastrados</h2>
-      <ul id="lista"></ul>
+    <div id="view-produtos" style="display: none;">
+      <button id="btn-voltar" class="btn-secondary">← Voltar para Gôndolas</button>
+      <div class="card" id="cadastro">
+        <h2>Novo Medicamento</h2>
+        <div id="codigo-lido-container" style="display:none;">
+          <strong>Código Lido:</strong> <span id="codigo-lido-texto"></span>
+        </div>
+        <input type="text" id="nome" placeholder="Nome do produto" />
+        <div class="input-group">
+          <label for="validade">Validade (Mês/Ano):</label>
+          <input type="text" id="validade" placeholder="MM/AA" inputmode="numeric" />
+        </div>
+        <div id="reader"></div>
+        <button id="scanBtn" class="btn-secondary">📷 Ler Código de Barras</button>
+        <button id="salvarBtn" class="btn-primary">Salvar Medicamento</button>
+      </div>
+      <div class="card">
+        <h2 id="titulo-lista-produtos">Produtos na Gôndola</h2>
+        <ul id="lista"></ul>
+      </div>
     </div>
   </main>
   

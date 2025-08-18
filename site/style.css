@@ -1,14 +1,15 @@
 /* Importando uma fonte mais agradável */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
+/* O código NOVO com a paleta da Extrafarma */
 :root {
-  --primary-color: #007bff;
-  --secondary-color: #6c757d;
-  --success-color: #28a745;
-  --warning-color: #ffc107;
-  --danger-color: #dc3545;
+  --primary-color: #e4002b; /* Vermelho Extrafarma */
+  --secondary-color: #5a5a5a; /* Cinza escuro para botões secundários */
+  --success-color: #28a745; /* Verde (manter para status positivo) */
+  --warning-color: #ffc107; /* Amarelo (manter para status de alerta) */
+  --danger-color: #b71c1c;  /* Vermelho mais escuro para status de perigo/vencido */
   --light-color: #f8f9fa;
-  --dark-color: #343a40;
+  --dark-color: #212529;   /* Cinza bem escuro para textos (melhor que preto puro) */
   --shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
@@ -147,4 +148,60 @@ button:hover {
 #codigo-lido-texto {
   font-weight: bold;
   color: var(--primary-color);
+}
+.form-inline {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-inline input {
+  flex-grow: 1;
+}
+
+#btn-voltar {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.lista-custom {
+  list-style: none;
+  padding: 0;
+}
+
+.lista-custom li {
+  background-color: var(--light-color);
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-left: 5px solid var(--secondary-color);
+}
+
+.lista-custom li:hover {
+  background-color: #e2e6ea;
+}
+
+/* Estilo para o botão de apagar */
+.btn-delete {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.btn-delete:hover {
+  opacity: 0.8;
+}
+
+/* Ajustes nas listas para acomodar o botão */
+.lista-custom li, .item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
