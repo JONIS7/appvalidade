@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="theme-color" content="#007bff"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+  <title>Controle de Validade</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  
+  <header>
+    <h1>Controle de Validades</h1>
+  </header>
+
+  <main class="container">
+    <div class="card" id="cadastro">
+      <h2>Novo Medicamento</h2>
+      <input type="text" id="nome" placeholder="Nome ou código do produto" />
+      <div class="input-group">
+        <label for="validade">Data de Validade:</label>
+        <input type="date" id="validade" />
+      </div>
+      <div id="reader"></div>
+      <button id="scanBtn" class="btn-secondary">📷 Ler Código de Barras</button>
+      <button id="salvarBtn" class="btn-primary">Salvar Medicamento</button>
+    </div>
+
+    <div class="card">
+      <h2>Medicamentos Cadastrados</h2>
+      <ul id="lista"></ul>
+    </div>
+  </main>
+  
+  <script src="script.js"></script>
+</body>
+</html>
