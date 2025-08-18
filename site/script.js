@@ -14,7 +14,39 @@ function pedirPermissaoNotificacao() {
   }
 }
 
+// Variável global para guardar o último código lido que não foi encontrado na base
+let ultimoCodigoNaoEncontrado = null;
+
 // --- Funções Principais ---
+
+/**
+ * Consulta o banco de dados de produtos (fixo e local)
+ * @param {string} codigo - O código de barras lido
+ * @returns {Promise<object|null>} O objeto do produto se encontrado, ou null.
+ */
+async function consultarBancoDeProdutos(codigo) {
+  try {
+    // 1. Carrega o banco de dados local (produtos aprendidos)
+    const produtosLocais = JSON.parse(localStorage.getItem('produtosAprendidos')) || [];
+    const produtoLocal = produtosLocais.find(p => p.codigo === codigo);
+    if (produtoLocal) return produtoLocal;
+
+    // 2. Se não achou, carrega o banco de dados base (produtos.json)
+    const response = await fetch('produtos.json');
+    if (!response.ok) {
+      console.error('Não foi possível carregar o banco de dados base de produtos.');
+      return null;
+    }
+    const produtosBase = await response.json();
+    const produtoBase = produtosBase.find(p => p.codigo === codigo);
+    return produtoBase || null;
+
+  } catch (error) {
+    console.error("Erro ao buscar produto:", error);
+    return null;
+  }
+}
+
 
 function salvarMedicamento() {
   const nomeInput = document.getElementById("nome");
@@ -25,11 +57,25 @@ function salvarMedicamento() {
     return;
   }
 
+  // Se estávamos salvando um produto novo que não existia na base
+  if (ultimoCodigoNaoEncontrado) {
+    // Adiciona o novo produto ao banco de dados que "aprende"
+    const produtosLocais = JSON.parse(localStorage.getItem('produtosAprendidos')) || [];
+    const novoProdutoAprendido = {
+      codigo: ultimoCodigoNaoEncontrado,
+      nome: nomeInput.value
+    };
+    produtosLocais.push(novoProdutoAprendido);
+    localStorage.setItem('produtosAprendidos', JSON.stringify(produtosLocais));
+    
+    console.log('Novo produto aprendido e salvo:', novoProdutoAprendido);
+  }
+
   // Adiciona o T00:00:00 para evitar problemas com fuso horário
   const validade = new Date(validadeInput.value + "T00:00:00");
   
   const novoMed = { 
-    id: Date.now(), // ID único para cada medicamento
+    id: Date.now(),
     nome: nomeInput.value, 
     validade: validade.toISOString(),
     notificacao6mesesEnviada: false,
@@ -41,8 +87,13 @@ function salvarMedicamento() {
   localStorage.setItem("medicamentos", JSON.stringify(lista));
 
   renderizarLista();
+  
+  // Limpa os campos e reseta a interface
   nomeInput.value = "";
   validadeInput.value = "";
+  nomeInput.placeholder = "Nome ou código do produto";
+  document.getElementById('codigo-lido-container').style.display = 'none';
+  ultimoCodigoNaoEncontrado = null;
 }
 
 function renderizarLista() {
@@ -142,10 +193,31 @@ function iniciarScanner() {
     html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => {
-        document.getElementById("nome").value = decodedText;
-        pararScanner(); // Para o scanner após sucesso
-        document.getElementById("validade").focus(); // Move o foco para a data
+      async (decodedText) => {
+        pararScanner();
+
+        // Mostra o código lido na tela
+        const containerCodigoLido = document.getElementById('codigo-lido-container');
+        const textoCodigoLido = document.getElementById('codigo-lido-texto');
+        textoCodigoLido.textContent = decodedText;
+        containerCodigoLido.style.display = 'block';
+
+        const nomeInput = document.getElementById('nome');
+        const validadeInput = document.getElementById('validade');
+
+        const produto = await consultarBancoDeProdutos(decodedText);
+        
+        if (produto) {
+          nomeInput.value = produto.nome;
+          validadeInput.focus();
+          ultimoCodigoNaoEncontrado = null; // Limpa a variável
+        } else {
+          nomeInput.value = ""; // Limpa o campo nome
+          nomeInput.placeholder = "PRODUTO NOVO! Digite o nome aqui.";
+          nomeInput.focus();
+          // Guarda o código não encontrado para salvar depois
+          ultimoCodigoNaoEncontrado = decodedText;
+        }
       },
       (errorMessage) => { /* ignora erros contínuos */ }
     ).catch((err) => {
@@ -183,4 +255,4 @@ document.addEventListener('DOMContentLoaded', () => {
   pedirPermissaoNotificacao();
   renderizarLista();
   verificarENotificar();
-});;
+});
