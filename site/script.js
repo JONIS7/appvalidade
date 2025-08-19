@@ -278,7 +278,7 @@ function renderizarGondolas() {
       scanBtn.textContent = "Parar Scanner";
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
-        { facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
+        { facingMode: "environment" }, { fps: 10 },
         async (decodedText) => {
           pararScanner();
           const containerCodigoLido = document.getElementById('codigo-lido-container');
