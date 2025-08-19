@@ -1,7 +1,8 @@
 // Registra o Service Worker ao carregar a página
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.service-worker.register('/service-worker.js')
+    // CORRIGIDO: de service-worker para serviceWorker
+    navigator.serviceWorker.register('/service-worker.js')
       .then(reg => console.log('Service Worker registrado:', reg))
       .catch(err => console.log('Falha ao registrar Service Worker:', err));
   });
@@ -48,18 +49,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const gondolas = JSON.parse(localStorage.getItem('gondolas')) || [];
     listaGondolasHTML.innerHTML = '';
     if (gondolas.length === 0) {
-      listaGondolasHTML.innerHTML = '<p style="text-align:center;">Nenhuma gôndola cadastrada.</p>';
-      return;
+      // Adiciona uma mensagem se não houver gôndolas
     }
+    
     gondolas.forEach(gondola => {
       const li = document.createElement('li');
+      // Adicionamos classes para o novo estilo de card
+      li.className = 'gondola-card';
+      li.dataset.id = gondola.id;
+      li.dataset.nome = gondola.nome;
+
       li.innerHTML = `
-        <span class="gondola-nome">${gondola.nome}</span>
+        <span class="gondola-card-nome">${gondola.nome}</span>
         <button class="btn-delete" data-id="${gondola.id}">Apagar</button>
       `;
-      li.querySelector('.gondola-nome').addEventListener('click', () => {
-        mostrarViewProdutos(gondola.id, gondola.nome);
-      });
       listaGondolasHTML.appendChild(li);
     });
   }
@@ -308,10 +311,18 @@ document.addEventListener('DOMContentLoaded', () => {
   salvarMedBtn.addEventListener('click', salvarMedicamento);
   scanBtn.addEventListener('click', iniciarScanner);
 
+  // Delegação de eventos para as gôndolas
   listaGondolasHTML.addEventListener('click', (event) => {
-    if (event.target.classList.contains('btn-delete')) {
-      const id = parseInt(event.target.dataset.id, 10);
+    const itemClicado = event.target.closest('.gondola-card');
+    if (!itemClicado) return;
+
+    if (event.target.closest('.btn-delete')) {
+      const id = parseInt(itemClicado.dataset.id, 10);
       apagarGondola(id);
+    } else {
+      const id = parseInt(itemClicado.dataset.id, 10);
+      const nome = itemClicado.dataset.nome;
+      mostrarViewProdutos(id, nome);
     }
   });
 
