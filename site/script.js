@@ -45,27 +45,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- LÓGICA DAS GÔNDOLAS ---
-  function renderizarGondolas() {
-    const gondolas = JSON.parse(localStorage.getItem('gondolas')) || [];
-    listaGondolasHTML.innerHTML = '';
-    if (gondolas.length === 0) {
-      // Adiciona uma mensagem se não houver gôndolas
-    }
-    
-    gondolas.forEach(gondola => {
-      const li = document.createElement('li');
-      // Adicionamos classes para o novo estilo de card
-      li.className = 'gondola-card';
-      li.dataset.id = gondola.id;
-      li.dataset.nome = gondola.nome;
-
-      li.innerHTML = `
-        <span class="gondola-card-nome">${gondola.nome}</span>
-        <button class="btn-delete" data-id="${gondola.id}">Apagar</button>
-      `;
-      listaGondolasHTML.appendChild(li);
-    });
+  // EM script.js, SUBSTITUA A SUA FUNÇÃO renderizarGondolas POR ESTA:
+function renderizarGondolas() {
+  const gondolas = JSON.parse(localStorage.getItem('gondolas')) || [];
+  listaGondolasHTML.innerHTML = '';
+  if (gondolas.length === 0) {
+    // A mensagem de "nenhuma gôndola" será tratada pelo CSS agora, então podemos deixar em branco ou manter.
+    return;
   }
+  
+  gondolas.forEach(gondola => {
+    const li = document.createElement('li');
+    // **** ESTA LINHA É A ADIÇÃO IMPORTANTE ****
+    li.className = 'gondola-card'; // Adiciona a "etiqueta" que o CSS precisa
+
+    li.dataset.id = gondola.id;
+    li.dataset.nome = gondola.nome;
+
+    li.innerHTML = `
+      <span class="gondola-card-nome">${gondola.nome}</span>
+      <button class="btn-delete" data-id="${gondola.id}">Apagar</button>
+    `;
+    
+    // Adiciona o clique para o card inteiro
+    li.addEventListener('click', (event) => {
+        if (!event.target.classList.contains('btn-delete')) {
+            mostrarViewProdutos(gondola.id, gondola.nome);
+        }
+    });
+
+    // Adiciona o clique apenas para o botão de apagar
+    const deleteButton = li.querySelector('.btn-delete');
+    deleteButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Impede que o clique no botão abra a gôndola
+        const id = parseInt(deleteButton.dataset.id, 10);
+        apagarGondola(id);
+    });
+
+    listaGondolasHTML.appendChild(li);
+  });
+}
 
   function salvarGondola(event) {
     event.preventDefault();
