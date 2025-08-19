@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <meta name="theme-color" content="#e4002b"/> <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e4002b"/>
+  <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
   <title>Controle de Validade</title>
@@ -22,19 +23,20 @@
     <div id="view-gondolas">
       <div class="card">
         <h2>Nova Gôndola</h2>
-        <form id="form-gondola" class="form-inline">
+        <form id="form-gondola">
           <input type="text" id="nome-gondola" placeholder="Ex: Analgésicos, Vitaminas" required />
-          <button type="submit" class="btn-primary">Criar Gôndola</button>
+          <button type="submit">Criar Gôndola</button>
         </form>
       </div>
       <div class="card">
         <h2>Minhas Gôndolas</h2>
+        <input type="search" id="busca-gondola" class="input-busca" placeholder="🔎 Buscar gôndola...">
         <ul id="lista-gondolas" class="lista-custom"></ul>
       </div>
     </div>
 
     <div id="view-produtos" style="display: none;">
-      <button id="btn-voltar" class="btn-secondary">← Voltar para Gôndolas</button>
+      <button id="btn-voltar">← Voltar para Gôndolas</button>
       <div class="card" id="cadastro">
         <h2>Novo Medicamento</h2>
         <div id="codigo-lido-container" style="display:none;">
@@ -46,11 +48,17 @@
           <input type="text" id="validade" placeholder="MM/AA" inputmode="numeric" />
         </div>
         <div id="reader"></div>
-        <button id="scanBtn" class="btn-secondary">📷 Ler Código de Barras</button>
-        <button id="salvarBtn" class="btn-primary">Salvar Medicamento</button>
+        
+        <button id="scanBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <span>Ler Código de Barras</span>
+        </button>
+
+        <button id="salvarBtn">Salvar Medicamento</button>
       </div>
       <div class="card">
         <h2 id="titulo-lista-produtos">Produtos na Gôndola</h2>
+        <input type="search" id="busca-produto" class="input-busca" placeholder="🔎 Buscar produto...">
         <ul id="lista"></ul>
       </div>
     </div>
