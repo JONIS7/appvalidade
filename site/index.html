@@ -65,6 +65,49 @@
     </div>
   </main>
   
+  ... (resto do main)
+
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ======================================================
+    // COLE A SUA CONFIGURAÇÃO DO FIREBASE (firebaseConfig) AQUI
+    // ======================================================
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD2zgd1N4MtvcS69f-8gypacYQpT3bSmSU",
+  authDomain: "appfarmacia-50513.firebaseapp.com",
+  projectId: "appfarmacia-50513",
+  storageBucket: "appfarmacia-50513.firebasestorage.app",
+  messagingSenderId: "219773772150",
+  appId: "1:219773772150:web:2ef1a5a56318fb5c635a57",
+  measurementId: "G-CNYD04XKC7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+    
+    // Inicia o Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Cria uma referência global para o nosso banco de dados Firestore
+    // Nosso script.js poderá usar esta variável 'db'
+    const db = firebase.firestore();
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
   <script src="script.js"></script>
 </body>
 </html>
