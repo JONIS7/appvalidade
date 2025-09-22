@@ -26,30 +26,26 @@ window.onload = function() {
     google.accounts.id.renderButton(
         document.getElementById("g_id_signin"),
         { theme: "outline", size: "large" }
-    );
+    );}
 
     // Inicializa o cliente de token para pedir permissão da Agenda
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (tokenResponse) => {
-            if (tokenResponse.error) {
-                console.error(tokenResponse.error);
-                return;
-            }
-            console.log("Permissão da Agenda concedida!");
-            // Após a permissão, exibe a tela principal
-            mostrarTela2(usuarioLogado);
-        },
-    });
+// Em seu script.js, localize a inicialização do tokenClient
+tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (tokenResponse) => {
+        // ADICIONE ESTA LINHA PARA VER A RESPOSTA
+        console.log("RESPOSTA DA SOLICITAÇÃO DE TOKEN:", tokenResponse);
 
-    // Recuperar usuário logado ao recarregar a página
-    usuarioLogado = localStorage.getItem('usuarioLogado');
-    if (usuarioLogado) {
-        // Se já está logado, vai direto para a tela 2
+        if (tokenResponse.error) {
+            console.error("Erro ao obter permissão:", tokenResponse.error);
+            return;
+        }
+        
+        gapi.client.setToken(tokenResponse);
         mostrarTela2(usuarioLogado);
-    }
-};
+    },
+});
 
 // =================================================================
 //  FUNÇÕES DE AUTENTICAÇÃO E API
@@ -60,6 +56,15 @@ async function initializeGapiClient() {
         discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
     });
     gapiInited = true;
+
+    // ================================================================
+    // CORREÇÃO: MOVA A LÓGICA PARA CÁ
+    // Isso garante que a GAPI está pronta antes de chamar mostrarTela2
+    usuarioLogado = localStorage.getItem('usuarioLogado');
+    if (usuarioLogado) {
+        mostrarTela2(usuarioLogado);
+    }
+    // ================================================================
 }
 
 function handleCredentialResponse(response) {
@@ -69,7 +74,8 @@ function handleCredentialResponse(response) {
     
     // IMPORTANTE: Após o login, peça a permissão para a Agenda
     // Se o usuário negar, a tela 2 será exibida mesmo assim.
-    tokenClient.requestAccessToken(); 
+    //tokenClient.requestAccessToken(); 
+    mostrarTela2(usuarioLogado);
 }
 
 // Função para decodificar JWT (token do Google)
@@ -86,29 +92,28 @@ function parseJwt(token) {
 // =================================================================
 //  NOVA FUNÇÃO: CRIAR EVENTO NA GOOGLE AGENDA
 // =================================================================
+// NOVA VERSÃO SIMPLIFICADA
 async function criarEventoNaAgenda(event) {
+    console.log("3. Dentro da função criarEventoNaAgenda."); // Ponto de verificação 3
+
     if (!gapiInited) {
         alert("A API do Google ainda não foi inicializada. Tente novamente em alguns segundos.");
         return;
     }
     try {
+        console.log("4. Tentando inserir o evento na agenda..."); // Ponto de verificação 4
         const request = gapi.client.calendar.events.insert({
-            'calendarId': 'primary', // 'primary' se refere à agenda principal do usuário
+            'calendarId': 'primary',
             'resource': event,
         });
+
         const response = await request;
-        console.log('Evento criado: ', response.result);
+        console.log('5. Sucesso! Evento criado: ', response.result); // Ponto de verificação 5
         alert(`Lembrete "${event.summary}" criado na sua Google Agenda!`);
+
     } catch (err) {
-        console.error('Erro ao criar evento:', err);
-        // O erro mais comum é o usuário não ter dado permissão.
-        if (err.status === 401 || err.status === 403) {
-             alert('Não foi possível criar o lembrete. Por favor, recarregue a página e dê permissão para acesso à sua agenda.');
-             // Tenta pedir a permissão novamente
-             tokenClient.requestAccessToken();
-        } else {
-            alert('Ocorreu um erro inesperado ao criar o lembrete.');
-        }
+        console.error('5. Erro! Não foi possível criar o evento:', err); // Ponto de verificação 5 (com erro)
+        alert('Não foi possível criar o lembrete. Verifique o console para mais detalhes e certifique-se de que deu permissão à sua agenda.');
     }
 }
 
@@ -118,17 +123,30 @@ async function criarEventoNaAgenda(event) {
 // =================================================================
 
 function mostrarTela2(nomeUsuario) {
+    // Esta linha verifica se a permissão já foi concedida
+    const temPermissao = gapi.client.getToken() !== null;
+
     medicamentos = JSON.parse(localStorage.getItem('medicamentos')) || [];
     document.body.innerHTML = `
     <div class="container-fluid min-vh-100 d-flex flex-column justify-content-start align-items-center bg-dark py-3">
         <div class="w-100 mx-auto" style="max-width: 100vw;">
             <div class="bg-dark text-white rounded-3 shadow p-3">
                 <h5 class="fw-bold mb-2 text-center">Olá, ${nomeUsuario || 'Usuário'}!</h5>
+
+                ${!temPermissao ? `
+                    <div class="alert alert-warning text-center my-3">
+                        Para salvar lembretes, conecte sua Google Agenda.
+                        <button id="btnConectarAgenda" class="btn btn-primary btn-sm mt-2">
+                            Conectar com a Agenda
+                        </button>
+                    </div>
+                ` : ''}
                 <div class="fw-bold mb-2" style="font-size:1.1rem;">NOVO MEDICAMENTO</div>
                 <div class="row g-3">
                     <div class="col-4">
                         <div class="border rounded-3 d-flex flex-column align-items-center justify-content-center"
-                             style="height:110px; cursor:pointer; font-size:3rem; font-weight:700; color:#fff; background:rgba(255,255,255,0.07);">
+                             style="height:110px; cursor:pointer; font-size:3rem; font-weight:700; color:#fff; background:rgba(255,255,255,0.07);"
+                             onclick="mostrarTelaCadastro()">
                             +
                         </div>
                     </div>
@@ -156,8 +174,17 @@ function mostrarTela2(nomeUsuario) {
     `;
 
     // --- EVENT LISTENERS DA TELA 2 ---
-    document.querySelector('.row .col-4:first-child > div').addEventListener('click', () => mostrarTelaCadastro());
-    
+    // Agora o JavaScript encontrará o botão e adicionará o evento de clique
+    if (!temPermissao) {
+        document.getElementById('btnConectarAgenda').addEventListener('click', () => {
+            // A chamada agora é feita com um clique do usuário!
+            tokenClient.requestAccessToken();
+        });
+    }
+
+    // Adicionei o onclick direto no HTML do "+" para simplificar, mas você pode manter o seu se preferir
+    // document.querySelector('.row .col-4:first-child > div').addEventListener('click', () => mostrarTelaCadastro());
+
     document.querySelectorAll('.gondola-card').forEach((card, i) => {
         card.addEventListener('mouseenter', function() { this.querySelector('.btn-delete').classList.remove('d-none'); });
         card.addEventListener('mouseleave', function() { this.querySelector('.btn-delete').classList.add('d-none'); });
@@ -176,6 +203,10 @@ function mostrarTela2(nomeUsuario) {
 
     // --- LÓGICA DO NOVO BOTÃO DE LEMBRETE MENSAL ---
     document.getElementById('btnLembreteMensal').onclick = () => {
+        if (!temPermissao) {
+            alert("Por favor, conecte sua Google Agenda primeiro para criar lembretes.");
+            return;
+        }
         const proximoMes = new Date();
         proximoMes.setMonth(proximoMes.getMonth() + 1);
         proximoMes.setDate(1);
@@ -187,7 +218,7 @@ function mostrarTela2(nomeUsuario) {
             'start': { 'date': dataInicio },
             'end': { 'date': dataInicio },
             'recurrence': [
-                'RRULE:FREQ=MONTHLY;BYMONTHDAY=1,2,3,4,5' 
+                'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
             ]
         };
         criarEventoNaAgenda(eventoMensal);
@@ -269,27 +300,26 @@ function mostrarTelaCadastro() {
 
     // --- LÓGICA DE SUBMISSÃO DO FORMULÁRIO MODIFICADA ---
     document.getElementById('formCadastro').onsubmit = function(event) {
-        event.preventDefault();
+    event.preventDefault();
+    console.log("1. Formulário de cadastro enviado."); // Ponto de verificação 1
 
-        const nome = document.querySelector('input[placeholder="Digite o nome"]').value;
-        const vencimentoStr = document.querySelector('input[type="date"]').value;
-        const fileInput = document.getElementById('inputArquivo');
-        const cameraInput = document.getElementById('inputCamera');
+    const nome = document.querySelector('input[placeholder="Digite o nome"]').value;
+    const vencimentoStr = document.querySelector('input[type="date"]').value;
+    const fileInput = document.getElementById('inputArquivo');
+    const cameraInput = document.getElementById('inputCamera');
 
-        // --- LÓGICA DA AGENDA ---
-        const dataVencimento = new Date(vencimentoStr + 'T00:00:00');
-        const dataAlerta = new Date(dataVencimento);
-        dataAlerta.setMonth(dataAlerta.getMonth() - 1); // Calcula 1 mês antes do vencimento
-        const dataAlertaStr = dataAlerta.toISOString().split('T')[0]; // Formato: YYYY-MM-DD
+    const dataVencimento = new Date(vencimentoStr + 'T00:00:00');
+    const dataAlerta = new Date(dataVencimento);
+    dataAlerta.setMonth(dataAlerta.getMonth() - 1);
+    const dataAlertaStr = dataAlerta.toISOString().split('T')[0];
 
-        const eventoVencimento = {
-            'summary': `RETIRAR PRODUTO: ${nome}`,
-            'description': `O produto "${nome}" vence em 1 mês (em ${vencimentoStr}). Por favor, verifique e retire-o se necessário.`,
-            'start': { 'date': dataAlertaStr }, // Evento para o dia inteiro
-            'end': { 'date': dataAlertaStr },
-            'recurrence': [ 'RRULE:FREQ=DAILY;COUNT=2' ], // Notifica por 2 dias seguidos
-        };
-        criarEventoNaAgenda(eventoVencimento);
+    const eventoVencimento = {
+        'summary': `RETIRAR PRODUTO: ${nome}`,
+        'description': `O produto "${nome}" vence em 1 mês (em ${vencimentoStr}). Por favor, verifique e retire-o se necessário.`,
+        'start': { 'date': dataAlertaStr },
+        'end': { 'date': dataAlertaStr },
+        'recurrence': ['RRULE:FREQ=DAILY;COUNT=2'],
+    };
         // --- FIM DA LÓGICA DA AGENDA ---
         
         function salvar(imagemBase64) {
