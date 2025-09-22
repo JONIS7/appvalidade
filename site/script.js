@@ -14,7 +14,7 @@ let medicamentos = JSON.parse(localStorage.getItem('medicamentos')) || [];
 // =================================================================
 //  INICIALIZAÇÃO DA APLICAÇÃO
 // =================================================================
-window.onload = function() {
+window.onload = function incializarApp() {
     // Carrega o GAPI (Google API) para a Agenda
     gapi.load('client', initializeGapiClient);
     
